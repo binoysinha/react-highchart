@@ -2,13 +2,11 @@
  * React highchart wrapper
  *
  * @version 1.0.0
- * @author [Binoy Sinha](https://github.corp.inmobi.com/binoy-sinha)
+ * @author [Binoy Sinha](https://github.com/binoy-sinha)
  */
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-
-const win = typeof global === 'undefined' ? window : global;
 
 /**
  * This is an react component that wraps Highchart library

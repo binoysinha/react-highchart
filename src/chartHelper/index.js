@@ -5,6 +5,15 @@ export const defaultChartConfig = {
 	yAxis: {
 		title: {
 			text: null
+		},
+		labels: {
+			enabled: true,
+			x: 0,
+			y: 0,
+			align: 'right',
+			distance: 0,
+			useHTML: true,
+			zIndex: 0
 		}
 	},
 	credits: {
@@ -12,10 +21,42 @@ export const defaultChartConfig = {
 	},
 	plotOptions: {
 		series: {
-			allowPointSelect: true
+			allowPointSelect: true,
+			point: {
+				events: {
+					click: function(evt) {
+						const obj = { name: this.name, point: this.options.y };
+						this.clickedFunc(obj);
+					}
+				}
+			}
+		},
+		spline: {
+			/* or spline, area, series, areaspline etc.*/
+			marker: {
+				enabled: false
+			}
+		},
+		areaspline: {
+			fillOpacity: 0.5,
+			marker: {
+				enabled: false
+			}
 		}
 	},
-
+	xAxis: {
+		type: 'category',
+		crosshair: false,
+		allowDecimals: false,
+		labels: {
+			style: {
+				color: '#5d6466'
+			}
+		},
+		categories: [],
+		gridLineWidth: 1,
+		gridLineDashStyle: 'longdash'
+	},
 	tooltip: {
 		formatter: function() {
 			return '<b>' + this.point.name + '</b>: ' + this.y + '';

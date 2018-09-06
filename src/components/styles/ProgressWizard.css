@@ -1,0 +1,161 @@
+@charset "UTF-8";
+.prog-wzd__progtrckrWrp {
+  margin: 0px auto;
+  width: 694px;
+  height: 100px;
+  padding-top: 20px; }
+
+.prog-wzd__edittrckr-doing, .prog-wzd__edittrckr-todo {
+  display: none; }
+
+.prog-wzd__edittrckr-done {
+  display: flex;
+  height: 50px;
+  border: 1px solid black;
+  background: #F1F2F5;
+  justify-content: space-between;
+  align-items: center; }
+
+.prog-wzd__progtrckr {
+  list-style-type: none;
+  display: flex; }
+  .prog-wzd__progtrckr li {
+    cursor: pointer;
+    position: relative;
+    flex: 1; }
+    .prog-wzd__progtrckr li:last-child {
+      flex: 0; }
+  .prog-wzd__progtrckr .disabled-click {
+    pointer-events: none; }
+  .prog-wzd__progtrckr .checked {
+    display: none; }
+  .prog-wzd__progtrckr__label {
+    position: absolute;
+    bottom: -50px;
+    left: -25px;
+    text-transform: uppercase;
+    color: #A3AFC7;
+    font-family: BarlowSemiBold, 'sans-serif';
+    font-size: 12px; }
+  .prog-wzd__progtrckr-todo {
+    color: silver;
+    border-bottom: 1px solid #A3AFC7; }
+    .prog-wzd__progtrckr-todo .track-num {
+      content: "\2022";
+      color: white;
+      background-color: #A3AFC7;
+      width: 28px;
+      line-height: 28px;
+      border-radius: 50%;
+      bottom: -15px; }
+  .prog-wzd__progtrckr .track-num {
+    position: absolute;
+    bottom: -17px;
+    text-align: center;
+    font-family: BarlowSemiBold, sans-serif;
+    font-size: 12px; }
+  .prog-wzd__progtrckr-done {
+    color: black;
+    border-bottom: 1px solid #4D89FF; }
+    .prog-wzd__progtrckr-done .track-num {
+      content: "✓";
+      color: white;
+      background-color: #4D89FF;
+      width: 30px;
+      line-height: 30px;
+      border-radius: 50%;
+      display: none; }
+    .prog-wzd__progtrckr-done .checked {
+      display: block;
+      position: absolute; }
+      .prog-wzd__progtrckr-done .checked:before {
+        background-color: #4D89FF;
+        color: white;
+        content: "✓";
+        display: block;
+        border-radius: 50%;
+        position: absolute;
+        border: 1px solid #4D89FF;
+        top: 0px;
+        left: 50%;
+        width: 28px;
+        height: 28px;
+        text-align: center;
+        line-height: 28px;
+        transition-duration: 0.4s;
+        transform: translate(0%, -50%); }
+    .prog-wzd__progtrckr-done:hover {
+      color: #0FA0CE; }
+  .prog-wzd__progtrckr-doing {
+    color: black;
+    border-bottom: 1px solid #A3AFC7; }
+    .prog-wzd__progtrckr-doing__label {
+      color: #333C4D; }
+    .prog-wzd__progtrckr-doing .track-num {
+      color: white;
+      background-color: #F1F5FD;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid #4D89FF; }
+      .prog-wzd__progtrckr-doing .track-num span {
+        width: 20px;
+        height: 20px;
+        background-color: #4D89FF;
+        border-radius: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        line-height: 20px;
+        text-align: center; }
+    .prog-wzd__progtrckr-doing:hover {
+      color: #0FA0CE; }
+  .prog-wzd__progtrckr.inline-label li:last-child {
+    flex: 1; }
+  .prog-wzd__progtrckr.inline-label .prog-wzd__progtrckr__label {
+    bottom: auto;
+    top: 50%;
+    background: #f1f2f5;
+    left: 62%;
+    transform: translate(-50%, -50%); }
+
+.prog-wzd__content {
+  background-color: #FFFFFF;
+  margin-top: 140px;
+  min-height: 300px;
+  width: 900px;
+  margin: 0 auto;
+  box-sizing: border-box; }
+  .prog-wzd__content-edit {
+    margin: 0px;
+    padding: 0px; }
+    .prog-wzd__content-edit li {
+      padding: 0 60px; }
+  .prog-wzd__content-form {
+    padding: 60px; }
+  .prog-wzd__content__btn_grp {
+    margin-left: 66%;
+    padding-bottom: 48px;
+    display: flex; }
+    .prog-wzd__content__btn_grp_btn {
+      background-color: transparent;
+      color: white;
+      outline: none;
+      cursor: pointer;
+      font: inherit;
+      padding: 15px 24px;
+      margin: 0 10px;
+      font-weight: bold;
+      border-radius: 5px;
+      min-width: 108px;
+      font-size: 16px;
+      font-family: BarlowSemiBold, sans-serif;
+      transition: all .3s;
+      line-height: 1.5;
+      font-weight: 600; }
+    .prog-wzd__content__btn_grp .btn--white {
+      background-color: #4D89FF;
+      align-self: flex-end; }
+    .prog-wzd__content__btn_grp .btn--blue {
+      color: #4D89FF; }

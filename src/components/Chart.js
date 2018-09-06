@@ -2,44 +2,60 @@
  * React highchart wrapper
  *
  * @version 1.0.0
- * @author [Binoy Sinha](https://github.corp.inmobi.com/binoy-sinha)
+ * @author [Binoy Sinha](https://github.com/binoy-sinha)
  */
 import React from 'react';
 import PropTypes from 'prop-types';
 import Highcharts from 'highcharts';
 
-import { COLOR_MAP, defaultChartConfig } from '../chartHelper';
-import ChartWrapper from '../ChartWrapper';
+import { COLOR_MAP, defaultChartConfig } from './ChartHelper/helper';
+import ChartWrapper from './ChartHelper/ChartWrapper';
+
+const shadowObj = {
+	offsetX: 0,
+	offsetY: 7,
+	width: 6,
+	opacity: 0.03
+};
 
 /**
- * This is an react functional component that exposes Chart component to user
+ * This is React functional component that wraps HighChart library.
+ * Chart component takes user defined props for rendering chart.
+ * This component acts as middle layer for merging user config and default config before rendering Highcharts with updated config.
+ * The benefit of this approach is user does not have to call extra function to re-render the chart when x,y coordinates changes.
+ * (NOTE) User can pass own config as defined or directly pass highcharts config as props. Extra config beyond the props will be merged before rendering the chart.
+ * See the props section for user defined config.
  */
 
-const Chart = ({ type, config, className = 'chart-wrapper', callback = () => {} }) => {
-	let { chartTitle = null, dataPoints, labels = { xAxis: null, yAxis: null }, ...extraConfig } = config;
+const Chart = ({ type, config, className = 'chart-wrapper', callback = () => {}, seriesClicked = () => {} }) => {
+	let { chartTitle = null, dataPoints, bgColor, labels = { xAxis: null, yAxis: null }, ...extraConfig } = config;
 
 	if (!type) {
 		throw new Error('Chart type must be specified');
 	}
+
 	if (!dataPoints.yCoordinates) {
 		throw new Error('Chart coordinates must be specified for the ' + type + ' chart component');
 	}
 
 	const chartTypes = {
 		chart: {
-			type
+			type,
+			backgroundColor: bgColor || '#F1F5FD'
 		}
 	};
 	let seriesData = { series: [] }; //series will take yCoordinates as an Array or Array of array
 
 	let title = { title: { text: chartTitle } }; // Sets the chart title
-
 	/**
 	 * Get the X,Y  data label.
 	 * labels.yAxis: Display Y axis label
 	 * labels.xAxis: Display X axis label
 	 */
-	let coordLabel = { yAxis: { title: { text: labels.yAxis } }, xAxis: { title: { text: labels.xAxis } } };
+	let coordLabel = {
+		yAxis: { title: { text: labels.yAxis }, visible: labels.yAxisVisible },
+		xAxis: { title: { text: labels.xAxis } }
+	};
 
 	/**
 	 * Merge user config with highcharts default config.
@@ -48,7 +64,8 @@ const Chart = ({ type, config, className = 'chart-wrapper', callback = () => {} 
 	 * coordLabel.xAxis: User xAxis config
 	 */
 	if (extraConfig.xAxis) {
-		extraConfig = { ...extraConfig.xAxis, ...coordLabel.xAxis };
+		let xAxis = { ...extraConfig.xAxis, ...coordLabel.xAxis };
+		extraConfig = { ...extraConfig, ...xAxis };
 	}
 
 	/**
@@ -58,7 +75,8 @@ const Chart = ({ type, config, className = 'chart-wrapper', callback = () => {} 
 	 * coordLabel.yAxis: User yAxis config
 	 */
 	if (extraConfig.yAxis) {
-		extraConfig = { ...extraConfig.yAxis, ...coordLabel.yAxis };
+		let yAxis = { ...extraConfig.yAxis, ...coordLabel.yAxis };
+		extraConfig = { ...extraConfig, ...yAxis };
 	}
 
 	/**
@@ -69,9 +87,12 @@ const Chart = ({ type, config, className = 'chart-wrapper', callback = () => {} 
 		let xDataPoints = {
 			xAxis: { categories: dataPoints.xCoordinates }
 		};
-		extraConfig = { ...extraConfig.xAxis, ...xDataPoints };
+		let xAxis = { ...extraConfig.xAxis, ...xDataPoints };
+		extraConfig = { ...extraConfig, ...xAxis };
 	}
 
+	let xAxisConfig = { xAxis: { ...defaultChartConfig.xAxis, ...coordLabel.xAxis, ...extraConfig.xAxis } };
+	let yAxisConfig = { yAxis: { ...defaultChartConfig.yAxis, ...coordLabel.yAxis, ...extraConfig.yAxis } };
 	/**
 	 * Populate the series data with the coordinates point depending on chart type
 	 * Series data will take an array of object
@@ -84,7 +105,7 @@ const Chart = ({ type, config, className = 'chart-wrapper', callback = () => {} 
 		const pieData = [];
 		dataPoints.yCoordinates.forEach((item, idx) => {
 			const obj = {
-				name: dataPoints.dataLabel ? dataPoints.dataLabel[idx] : '',
+				name: dataPoints.seriesName ? dataPoints.seriesName[idx] : null,
 				y: item,
 				color: dataPoints.colors ? dataPoints.colors[idx] : COLOR_MAP[idx]
 			};
@@ -94,15 +115,41 @@ const Chart = ({ type, config, className = 'chart-wrapper', callback = () => {} 
 		seriesData.series = [{ data: pieData }];
 	} else {
 		seriesData.series = dataPoints.yCoordinates.map((points, idx) => {
-			const ptPoints = points.map(item => ({
-				name: dataPoints.dataLabel ? dataPoints.dataLabel[idx] : '',
-				y: item,
-				color: dataPoints.colors ? dataPoints.colors[idx] : COLOR_MAP[idx]
-			}));
-			return {
-				name: dataPoints.dataLabel ? dataPoints.dataLabel[idx] : '',
-				data: ptPoints
+			let ptPoints = [];
+			try {
+				ptPoints = points.map((item, j) => {
+					/**
+					 * Tooltip value must be provided in array ofObject format
+					 * e.g: [{Industry: 2345}, {Manufacturing: 434}]
+					 */
+					if (dataPoints.tooltipVal && dataPoints.tooltipVal.length > 0) {
+						if (dataPoints.tooltipVal[idx][j] && typeof dataPoints.tooltipVal[idx][j] !== 'object') {
+							throw new Error(`Tooltip object must have object format`);
+						}
+					}
+					return {
+						name: dataPoints.seriesName ? dataPoints.seriesName[idx] : '',
+						y: item,
+						tootipVal: dataPoints.tooltipVal && dataPoints.tooltipVal.length > 0 ? dataPoints.tooltipVal[idx][j] : '',
+						clickedFunc: seriesClicked
+					};
+				});
+			} catch (e) {
+				throw new Error(e);
+			}
+			let seriesData = {
+				name: dataPoints.seriesName ? dataPoints.seriesName[idx] : '',
+				data: ptPoints,
+				color: dataPoints.colors ? dataPoints.colors[idx] : COLOR_MAP[idx],
+				shadow: false,
+				showInLegend: dataPoints.showSeriesName
 			};
+
+			if (dataPoints.shadowEnabled && dataPoints.shadowEnabled === dataPoints.seriesName[idx]) {
+				seriesData.shadow = shadowObj;
+			}
+
+			return seriesData;
 		});
 	}
 
@@ -113,9 +160,10 @@ const Chart = ({ type, config, className = 'chart-wrapper', callback = () => {} 
 		...defaultChartConfig,
 		...chartTypes,
 		...title,
-		...coordLabel,
 		...seriesData,
-		...extraConfig
+		...extraConfig,
+		...xAxisConfig,
+		...yAxisConfig
 	};
 	return (
 		<ChartWrapper
@@ -131,8 +179,8 @@ const Chart = ({ type, config, className = 'chart-wrapper', callback = () => {} 
 Chart.defaultProps = {
 	config: {
 		labels: {
-			xAxis: '',
-			yAxis: ''
+			yCoordinates: '',
+			yCoordinates: ''
 		},
 		title: null
 	}
@@ -140,17 +188,22 @@ Chart.defaultProps = {
 
 Chart.propTypes = {
 	/**
-	 * chartTitle: Title of the chart
+	 * Config object consist of following properties
+	 * chartTitle: Title of the chart;
+	 * bgColor: Background color for the chart;
 	 * dataPoints: Coordinates for the chart plotting, color.
 	 * labels: X,Y coordinates Info
 	 */
 	config: PropTypes.shape({
 		chartTitle: PropTypes.string,
+		bgColor: PropTypes.string,
 		dataPoints: PropTypes.shape({
 			yCoordinates: PropTypes.array,
 			xCoordinates: PropTypes.array,
+			tooltipVal: PropTypes.array,
 			dataLabel: PropTypes.array,
-			colors: PropTypes.array
+			colors: PropTypes.array,
+			shadowEnabled: PropTypes.string
 		}).isRequired,
 		labels: PropTypes.shape({
 			xAxis: PropTypes.string,
@@ -162,12 +215,16 @@ Chart.propTypes = {
 	 */
 	type: PropTypes.string.isRequired,
 	/**
-	 * className: Give the className to the chart div container
+	 * This props provide the hook to give class to the wrapping chart container
 	 */
 	className: PropTypes.string,
 	/**
-	 * callback: Callback function to be executed once chart is rendered
+	 * Callback function to be executed once chart is rendered
 	 */
-	callback: PropTypes.func
+	callback: PropTypes.func,
+	/**
+	 * Function to be executed once user clicked on a particular series.
+	 */
+	seriesClicked: PropTypes.func
 };
 export default Chart;
